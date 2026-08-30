@@ -116,6 +116,9 @@ MIT, inherited from FableCut. See `LICENSE`.
 
 ## The hosted demo
 
+Live at <https://ronak-create.github.io/fablecut-webmcp/>, built and deployed
+from `main` by `.github/workflows/pages.yml`.
+
 `build-demo.js` produces `dist/`, a static build with no server behind it.
 `static-mode.js` serves the API surface app.js expects from static files and
 localStorage, so every visitor gets a private copy of the demo timeline. There

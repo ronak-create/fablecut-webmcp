@@ -44,7 +44,9 @@ Full tool list and the prior-work / new-work split: **[WEBMCP.md](WEBMCP.md)**.
 
 ## Try it
 
-Open the demo in **Chrome 149+** with `chrome://flags/#enable-webmcp-testing`
+**Live demo: <https://ronak-create.github.io/fablecut-webmcp/>**
+
+Open it in **Chrome 149+** with `chrome://flags/#enable-webmcp-testing`
 set to Enabled, or in **ChatGPT's in-app browser**, which supports WebMCP out of
 the box. Then ask your agent things like:
 
