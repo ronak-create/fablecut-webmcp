@@ -25,7 +25,7 @@ To see only the new work:
 
 ```sh
 git log --reverse --oneline          # first commit is the baseline; all others are new
-git diff 8866343 --stat              # every change made for the challenge
+git diff c8b528d --stat              # every change made for the challenge
 ```
 
 ## New work
@@ -113,3 +113,19 @@ await window.FableCutWebMCP.tools
 ## Licence
 
 MIT, inherited from FableCut. See `LICENSE`.
+
+## The hosted demo
+
+`build-demo.js` produces `dist/`, a static build with no server behind it.
+`static-mode.js` serves the API surface app.js expects from static files and
+localStorage, so every visitor gets a private copy of the demo timeline. There
+is no shared `project.json` for two judges to collide over, no cold start, and
+nothing to run.
+
+The demo timeline (`demo/make-demo-project.js`) is built only from assets that
+ship with FableCut under MIT, plus text and adjustment layers, which need no
+media. Nothing here redistributes client work or third-party audio.
+
+```sh
+node build-demo.js && npx serve dist     # add ?reset to discard local edits
+```
