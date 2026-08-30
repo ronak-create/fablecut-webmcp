@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FableCut - the browser video editor AI agents can drive</title>
+<meta name="description" content="A Premiere-style video editor that runs in your browser and exposes its whole timeline as one JSON file. Edit it yourself, or let an AI agent cut your video while you watch.">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<meta name="theme-color" content="#0a0a0f">
+
+<!-- Open Graph / social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="FableCut - the browser video editor AI agents can drive">
+<meta property="og:description" content="A Premiere-style browser video editor whose whole timeline is one JSON file. Any agent that writes JSON can edit video.">
+<meta property="og:image" content="./screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="./styles.css?v=8">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ── Background: the page is graded like a FableCut edit ──
+     aurora wash + fine grid + film grain + vignette + a cursor spotlight.
+     All fixed, non-interactive, and disabled under reduced motion. -->
+<div class="fx" aria-hidden="true">
+  <div class="fx-aurora"></div>
+  <div class="fx-grid"></div>
+  <div class="fx-spot" id="fxSpot"></div>
+  <div class="fx-grain"></div>
+  <div class="fx-vignette"></div>
+</div>
+
+<!-- ── Nav ── -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="FableCut home">
+      <svg class="brand-mark" viewBox="0 0 512 512" width="26" height="26" aria-hidden="true">
+        <defs><linearGradient id="ng" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7b6cff"/><stop offset="1" stop-color="#4f8cff"/>
+        </linearGradient></defs>
+        <rect width="512" height="512" rx="112" fill="url(#ng)"/>
+        <g fill="#fff"><path d="M188 146 L244 176 L244 336 L188 366 Z"/><path d="M268 189 L392 256 L268 323 Z"/></g>
+      </svg>
+      <span>FableCut</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#demo">Demo</a>
+      <a href="#how">How it works</a>
+      <a href="#start">Quick start</a>
+      <a href="https://deepwiki.com/ronak-create/FableCut" rel="noopener">Docs</a>
+      <a href="https://discord.gg/WBKScy52F" rel="noopener">Discord</a>
+      <a class="nav-cta" href="https://github.com/ronak-create/FableCut" rel="noopener">
+        <svg class="star-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.783 1.401 8.169L12 18.896l-7.335 3.866 1.401-8.169L.132 9.21l8.2-1.192z"/></svg>
+        <span>GitHub</span>
+        <span class="nav-star-count" data-gh-stars data-fallback="★">—</span>
+      </a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ── Hero ── -->
+<section class="hero" id="top">
+  <canvas class="hero-ascii" id="heroAscii" aria-hidden="true"></canvas>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="hero-copy reveal">
+      <h1 class="hero-title">The browser video editor<br>agents can drive.</h1>
+      <p class="lede">A Premiere-style editor whose whole timeline is one JSON file. Any agent that writes JSON can edit video.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/ronak-create/FableCut" rel="noopener">Get it on GitHub</a>
+        <a class="hero-demo-link" href="#demo">Watch the demo <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <p class="hero-note">Zero npm dependencies. One <code>node server.js</code>. MIT licensed.</p>
+      <p class="agent-ticker" role="status" aria-live="off" aria-label="An agent editing in real time">
+        <span class="spin" aria-hidden="true">&#x280B;</span>
+        <span class="verb">editing timeline</span>
+        <span class="sep" aria-hidden="true">&middot;</span>
+        <span class="elapsed">0s</span>
+        <span class="sep" aria-hidden="true">&middot;</span>
+        <span class="dl" aria-hidden="true">&darr;</span>
+        <span class="tokens">0</span>&nbsp;tokens
+      </p>
+    </div>
+    <div class="hero-shot reveal">
+      <div class="window">
+        <div class="window-bar"><span></span><span></span><span></span></div>
+        <img src="./screenshot.png" width="1280" height="720" alt="The FableCut editor: a timeline with video and audio tracks, a preview monitor, and an inspector panel." loading="eager">
+      </div>
+    </div>
+  </div>
+  <div class="ruler" aria-hidden="true">
+    <div class="playhead"></div>
+    <i class="mk" style="left:14%"></i><i class="mk" style="left:33%"></i>
+    <i class="mk" style="left:52%"></i><i class="mk" style="left:71%"></i><i class="mk" style="left:88%"></i>
+  </div>
+</section>
+
+<!-- ── Demo ── -->
+<section class="section demo" id="demo">
+  <div class="wrap">
+    <div class="head demo-head reveal zoom">
+      <span class="tick"></span>
+      <h2>This reel was edited by Claude Code, live.</h2>
+      <p class="sub">No timeline dragging, no keyframing by hand. An agent wrote <code class="tag-code">project.json</code> in a real session while the browser reloaded in real time. What you see is the actual output.</p>
+    </div>
+    <figure class="demo-video reveal">
+      <video controls preload="metadata" poster="./screenshot.png"
+             src="https://github.com/ronak-create/FableCut/releases/download/v1.3.0/fablecut-demo.mp4">
+        Your browser cannot play this video.
+        <a href="https://github.com/ronak-create/FableCut/releases/tag/v1.3.0">Download the demo reel</a>.
+      </video>
+      <figcaption>Music: Digital Lemonade by Kevin MacLeod, CC BY 4.0.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ── Primer: how does an AI edit my video? ── -->
+<section class="section line-top primer editorial" id="primer">
+  <div class="wrap">
+    <div class="head reveal zoom">
+      <span class="tick"></span>
+      <h2>How does an AI actually edit my video?</h2>
+      <p class="sub">If you cut video but have never let software do the cutting, here is the whole idea in three steps. No coding required to follow along.</p>
+    </div>
+    <div class="flow reveal">
+      <span class="flow-line" aria-hidden="true"></span>
+      <ol class="flow-steps">
+        <li class="fstep">
+          <span class="node" aria-hidden="true"></span>
+          <div class="idx">01</div>
+          <h3>You describe the edit</h3>
+          <p>Ask in plain language: cut this to the beat, drop in a title, grade it cinematic. An agent is simply software that reads your request and acts on it.</p>
+        </li>
+        <li class="fstep">
+          <span class="node" aria-hidden="true"></span>
+          <div class="idx">02</div>
+          <h3>It writes the timeline</h3>
+          <p>Your whole edit lives in one text file, <code>project.json</code>: clips, tracks, effects, keyframes, transitions. The agent edits that instead of clicking around.</p>
+        </li>
+        <li class="fstep">
+          <span class="node" aria-hidden="true"></span>
+          <div class="idx">03</div>
+          <h3>You watch it happen</h3>
+          <p>The open editor reloads in about 150 milliseconds. The timeline updates in front of you. Nudge anything by hand, then export when it feels right.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works: control surfaces ── -->
+<section class="section line-top how" id="how">
+  <div class="wrap">
+    <div class="how-grid">
+      <div class="how-copy reveal zoom">
+        <span class="tick"></span>
+        <h2>The project file is the interface.</h2>
+        <p class="sub">Most AI video tools hide the edit behind a black-box API. FableCut does the opposite: the timeline is a plain document, and anything that can write it can edit video. A human and an agent can work the same timeline at once.</p>
+        <ul class="how-list">
+          <li><strong>MCP server</strong><span>Claude Code, Claude Desktop, or any MCP client drives it with typed tools.</span></li>
+          <li><strong>project.json</strong><span>Edit the file directly. The UI hot-reloads over server-sent events.</span></li>
+          <li><strong>REST API</strong><span>Plain HTTP for media, analysis, live-reload and export.</span></li>
+        </ul>
+      </div>
+      <div class="how-code reveal">
+        <div class="code-card">
+          <div class="code-top"><span class="dot-file">project.json</span></div>
+<pre><code>{
+  <span class="k">"fps"</span>: <span class="n">30</span>, <span class="k">"width"</span>: <span class="n">1080</span>, <span class="k">"height"</span>: <span class="n">1920</span>,
+  <span class="k">"clips"</span>: [
+    {
+      <span class="k">"kind"</span>: <span class="s">"video"</span>, <span class="k">"track"</span>: <span class="s">"V1"</span>,
+      <span class="k">"start"</span>: <span class="n">0</span>, <span class="k">"in"</span>: <span class="n">2.5</span>, <span class="k">"duration"</span>: <span class="n">3.4</span>,
+      <span class="k">"props"</span>: { <span class="k">"filterPreset"</span>: <span class="s">"teal-orange"</span> },
+      <span class="k">"keyframes"</span>: {
+        <span class="k">"scale"</span>: [{ <span class="k">"t"</span>: <span class="n">0</span>, <span class="k">"v"</span>: <span class="n">1</span> },
+                  { <span class="k">"t"</span>: <span class="n">3.4</span>, <span class="k">"v"</span>: <span class="n">1.18</span> }]
+      }
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Kinetic marquee: the product's own look, in motion (one per page) ── -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="f-anton">teal-orange</span><i>&#9670;</i><span class="f-playfair">speed ramp</span><i>&#9670;</i><span class="f-bebas">chroma key</span><i>&#9670;</i><span class="f-abril">film grain</span><i>&#9670;</i><span class="f-oswald">whip-pan</span><i>&#9670;</i><span class="f-archivo">noir</span><i>&#9670;</i><span class="f-bebas">RGB split</span><i>&#9670;</i><span class="f-anton">glitch</span><i>&#9670;</i><span class="f-playfair">neon glow</span><i>&#9670;</i><span class="f-oswald">adjustment layers</span><i>&#9670;</i><span class="f-abril">keyframes</span><i>&#9670;</i><span class="f-bebas">cinematic</span><i>&#9670;</i>
+    <span class="f-anton">teal-orange</span><i>&#9670;</i><span class="f-playfair">speed ramp</span><i>&#9670;</i><span class="f-bebas">chroma key</span><i>&#9670;</i><span class="f-abril">film grain</span><i>&#9670;</i><span class="f-oswald">whip-pan</span><i>&#9670;</i><span class="f-archivo">noir</span><i>&#9670;</i><span class="f-bebas">RGB split</span><i>&#9670;</i><span class="f-anton">glitch</span><i>&#9670;</i><span class="f-playfair">neon glow</span><i>&#9670;</i><span class="f-oswald">adjustment layers</span><i>&#9670;</i><span class="f-abril">keyframes</span><i>&#9670;</i><span class="f-bebas">cinematic</span><i>&#9670;</i>
+  </div>
+</div>
+
+<!-- ── Quick start ── -->
+<section class="section line-top start" id="start">
+  <div class="wrap">
+    <div class="head start-head reveal zoom">
+      <span class="tick"></span>
+      <h2>Up and running in under a minute.</h2>
+      <p class="sub">Node 18+ and a Chromium browser. ffmpeg on PATH is optional but recommended for fast export.</p>
+    </div>
+    <div class="start-grid">
+      <div class="cmd-card reveal">
+        <h3>Run the editor</h3>
+        <div class="cmd">
+          <pre><code id="cmd1">git clone https://github.com/ronak-create/FableCut.git
+cd FableCut
+node server.js</code></pre>
+          <button class="copy" data-target="cmd1" aria-label="Copy commands">Copy</button>
+        </div>
+        <p class="cmd-note">Opens at <code>http://localhost:7777</code>. Since v1.3.1 it binds to localhost only.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <h3>Let an agent drive it</h3>
+        <div class="cmd">
+          <pre><code id="cmd2">claude mcp add -s user fablecut -- \
+  node "/path/to/FableCut/mcp-server.js"</code></pre>
+          <button class="copy" data-target="cmd2" aria-label="Copy command">Copy</button>
+        </div>
+        <p class="cmd-note">Registers the MCP server for every Claude Code session. Full setup in the README.</p>
+      </div>
+    </div>
+    <div class="start-links reveal">
+      <a class="btn btn-primary" href="https://github.com/ronak-create/FableCut" rel="noopener">Star it on GitHub</a>
+      <a class="btn btn-ghost" href="https://github.com/ronak-create/FableCut/blob/main/CLAUDE.md" rel="noopener">Read the full manual</a>
+      <a class="btn btn-ghost" href="https://deepwiki.com/ronak-create/FableCut" rel="noopener">Browse the docs on DeepWiki</a>
+      <a class="btn btn-ghost" href="https://discord.gg/WBKScy52F" rel="noopener">Join the Discord</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Live status ── -->
+<section class="section line-top status" id="status">
+  <div class="wrap">
+    <div class="status-card reveal" id="statusCard">
+      <div class="status-main">
+        <h2 id="relTag">Latest release</h2>
+        <p class="sub" id="relMeta">Fetching the newest version from GitHub.</p>
+      </div>
+      <div class="status-links">
+        <a id="relLink" href="https://github.com/ronak-create/FableCut/releases" rel="noopener">Release notes</a>
+        <a href="https://github.com/ronak-create/FableCut/blob/main/CHANGELOG.md" rel="noopener">Changelog</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand">
+      <svg viewBox="0 0 512 512" width="22" height="22" aria-hidden="true">
+        <rect width="512" height="512" rx="112" fill="url(#ng)"/>
+        <g fill="#fff"><path d="M188 146 L244 176 L244 336 L188 366 Z"/><path d="M268 189 L392 256 L268 323 Z"/></g>
+      </svg>
+      <span>FableCut</span>
+    </div>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="https://github.com/ronak-create/FableCut" rel="noopener">GitHub</a>
+      <a href="https://deepwiki.com/ronak-create/FableCut" rel="noopener">Docs</a>
+      <a href="https://discord.gg/WBKScy52F" rel="noopener">Discord</a>
+      <a href="https://github.com/ronak-create/FableCut/issues" rel="noopener">Issues</a>
+      <a href="https://news.ycombinator.com/item?id=48845422" rel="noopener">Show HN</a>
+      <a href="https://github.com/ronak-create/FableCut/blob/main/SECURITY.md" rel="noopener">Security</a>
+      <a href="https://github.com/ronak-create/FableCut/blob/main/LICENSE" rel="noopener">MIT License</a>
+    </nav>
+  </div>
+  <p class="foot-fine">Built in the browser. Drivable by any agent that speaks JSON.</p>
+</footer>
+
+<script src="./main.js?v=4"></script>
+</body>
+</html>

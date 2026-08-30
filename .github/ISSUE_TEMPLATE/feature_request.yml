@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a transition, effect, preset, or capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the editing outcome you're after, not just the mechanism.
+      placeholder: "I want to ... so that my reels can ..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach (optional)
+      description: |
+        If you have one — e.g. "a new entry in TRANSITIONS + applyTransition()",
+        "a filter preset", "a new prop on text clips".
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Transition
+        - Filter / color preset
+        - Text / caption
+        - Motion / keyframes
+        - Export
+        - Agent API (MCP / REST / schema)
+        - Asset library
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Fits the project's constraints
+      options:
+        - label: This can be done without adding runtime npm dependencies
+        - label: This renders identically in preview and export (single compositor)

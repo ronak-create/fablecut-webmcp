@@ -1,0 +1,29 @@
+# Keep the bundle to the shipped app. This mirrors .gitignore — the mcpb
+# packer does NOT read .gitignore, and without this it sweeps in media/,
+# exports/ and every local project backup (a ~700 MB bundle of private
+# footage instead of a ~700 KB one).
+
+# Runtime user data — recreated automatically on first run
+project.json
+project-*.json
+project.backup-*.json
+media/
+exports/
+analysis/
+projects_desktops/
+
+# Sound FX are local-only: their source licenses may not allow redistribution.
+# fonts/ (Google Fonts, OFL) and elements/ + svg/ (self-authored) do ship.
+library/sfx/
+
+# Local scratch / notes
+out/
+SUGGESTIONS.md
+
+# Repo & CI plumbing that a bundle has no use for
+.git/
+.github/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

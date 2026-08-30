@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in the editor, export, or agent API isn't working
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please fill in the details below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Exact steps. If it involves a specific timeline, paste a minimal
+        `project.json` (or the relevant clip/props) that reproduces it.
+      placeholder: |
+        1. Add a video clip on V1
+        2. Set props.speed keyframes to ...
+        3. Export → observe ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Editor UI / timeline
+        - Compositor / rendering (preview)
+        - Export (fast / realtime)
+        - Audio
+        - MCP server
+        - REST API / server.js
+        - Animated SVG
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, browser + version, Node version, ffmpeg version (if export-related)
+      placeholder: "Windows 11, Chrome 126, Node 20.11, ffmpeg 7.0"
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console / server output
+      description: Any errors from the browser devtools console or the `node server.js` terminal.
+      render: shell

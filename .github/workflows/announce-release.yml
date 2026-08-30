@@ -1,0 +1,94 @@
+name: Announce release
+
+# Replaces Discord's native GitHub integration (the `/github` webhook endpoint),
+# which renders a release as a bare title link and throws the body away. Here we
+# build the embed ourselves, so the announcement carries the actual release notes.
+
+on:
+  release:
+    types: [published]      # not `created`/`edited`/`released` — one post per release
+  workflow_dispatch:        # manual re-run: pick a tag below
+    inputs:
+      tag:
+        description: "Tag to announce (e.g. v1.7.0)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve the release
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -n "${TAG:-}" ]; then
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+               --json name,tagName,body,url,publishedAt,author > release.json
+          else
+            jq '.release | {name, tagName: .tag_name, body, url: .html_url,
+                            publishedAt: .published_at, author}' \
+               "$GITHUB_EVENT_PATH" > release.json
+          fi
+          echo "tag=$(jq -r '.tagName' release.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Post to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          # Optional: set a repo variable DISCORD_RELEASE_ROLE_ID to ping a role.
+          ROLE_ID: ${{ vars.DISCORD_RELEASE_ROLE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${WEBHOOK:-}" ]; then
+            echo "::error::DISCORD_RELEASE_WEBHOOK secret is not set"; exit 1
+          fi
+
+          ping=""
+          if [ -n "${ROLE_ID:-}" ]; then ping=" <@&${ROLE_ID}>"; fi
+
+          # Discord caps an embed description at 4096 chars. Leave headroom and
+          # point at the full notes when a release runs long.
+          jq -n \
+            --slurpfile r release.json \
+            --arg repo_url "$REPO_URL" \
+            --arg repo_full "$GITHUB_REPOSITORY" \
+            --arg ping "$ping" \
+            '
+            $r[0] as $rel
+            | ($rel.body // "") as $body
+            | (if ($body | length) > 3800
+               then ($body[0:3800] + "\n\n… [read the full notes](" + $rel.url + ")")
+               else $body end) as $desc
+            | {
+                username: "FableCut",
+                content: ("**" + $rel.tagName + "** is out" + $ping),
+                allowed_mentions: { parse: ["roles"] },
+                embeds: [{
+                  author: {
+                    name: $repo_full,
+                    url: $repo_url,
+                    icon_url: $rel.author.avatar_url
+                  },
+                  title: ($rel.name // $rel.tagName),
+                  url: $rel.url,
+                  description: $desc,
+                  color: 8088831,
+                  footer: { text: "FableCut • MIT" },
+                  timestamp: $rel.publishedAt
+                }]
+              }' > payload.json
+
+          code=$(curl -sS -o resp.txt -w '%{http_code}' \
+                  -H "Content-Type: application/json" \
+                  -X POST -d @payload.json "$WEBHOOK")
+          echo "Discord responded $code"
+          if [ "$code" != "204" ] && [ "$code" != "200" ]; then
+            cat resp.txt; exit 1
+          fi
+          echo "Announced ${{ steps.rel.outputs.tag }} to Discord."

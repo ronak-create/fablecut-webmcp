@@ -1,0 +1,16 @@
+{
+  "name": "fablecut",
+  "owner": {
+    "name": "Ronak Parmar",
+    "url": "https://github.com/ronak-create"
+  },
+  "description": "FableCut — a browser video editor that AI agents can drive.",
+  "plugins": [
+    {
+      "name": "fablecut",
+      "source": "./",
+      "category": "media",
+      "tags": ["video", "video-editing", "captions", "ffmpeg", "mcp"]
+    }
+  ]
+}

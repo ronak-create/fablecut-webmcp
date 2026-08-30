@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest version package.json supports, the current LTS, and latest.
+        node: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # No install step on purpose: FableCut has no runtime dependencies and the
+      # suite uses only node:test. A missing `npm install` here is the feature.
+      - name: Run the test suite
+        run: npm test
+
+  check:
+    name: Syntax & sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Syntax-check JavaScript
+        run: |
+          for f in server.js app.js mcp-server.js analyze.js paths.js; do
+            echo "checking $f"
+            node --check "$f"
+          done
+
+      - name: Validate JSON files
+        run: |
+          for f in package.json server.json manifest.json .mcp.json \
+                   .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8')); console.log('$f OK')"
+          done
+
+      - name: Check the data-dir split
+        # NB: under `node -e`, __dirname is "." — compare against process.cwd(),
+        # which is the repo root here and therefore paths.js's own __dirname.
+        run: |
+          # Default: everything beside the code, as it has always been.
+          node -e "
+            const p = require('./paths');
+            if (p.SPLIT) { console.error('expected SPLIT=false with no env'); process.exit(1); }
+            if (p.PROJECT_FILE !== require('path').join(process.cwd(), 'project.json')) {
+              console.error('default project path moved:', p.PROJECT_FILE); process.exit(1);
+            }
+            console.log('default layout OK');
+          "
+          # With FABLECUT_DATA_DIR: user data moves, app files do not.
+          FABLECUT_DATA_DIR=/tmp/fc-data node -e "
+            const path = require('path');
+            const fs = require('fs');
+            const p = require('./paths');
+            const want = path.resolve(process.env.FABLECUT_DATA_DIR);
+            if (!p.SPLIT) { console.error('expected SPLIT=true'); process.exit(1); }
+            for (const [k, v] of Object.entries({
+              PROJECT_FILE: 'project.json', MEDIA_DIR: 'media',
+              EXPORTS_DIR: 'exports', ANALYSIS_DIR: 'analysis', LIBRARY_DIR: 'library',
+            })) {
+              if (p[k] !== path.join(want, v)) {
+                console.error(k, 'did not move:', p[k]); process.exit(1);
+              }
+            }
+            if (p.APP_DIR !== process.cwd()) { console.error('APP_DIR moved:', p.APP_DIR); process.exit(1); }
+            p.ensureDirs();
+            if (!fs.existsSync(path.join(want, 'library/svg/sparkles.svg'))) {
+              console.error('library was not seeded'); process.exit(1);
+            }
+            console.log('split layout OK');
+          "
