@@ -65,7 +65,7 @@ const media = SHOTS.map((s, i) => ({
   id: "m_shot" + (i + 1),
   name: s.file,
   kind: "svg",
-  src: "/library/svg/" + s.file,
+  src: "library/svg/" + s.file,
   width: 1920,
   height: 1080,
   folderId: null,

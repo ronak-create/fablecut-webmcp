@@ -26,7 +26,7 @@
       "id": "m_shot1",
       "name": "glow-orbs.svg",
       "kind": "svg",
-      "src": "/library/svg/glow-orbs.svg",
+      "src": "library/svg/glow-orbs.svg",
       "width": 1920,
       "height": 1080,
       "folderId": null
@@ -35,7 +35,7 @@
       "id": "m_shot2",
       "name": "radial-pulse.svg",
       "kind": "svg",
-      "src": "/library/svg/radial-pulse.svg",
+      "src": "library/svg/radial-pulse.svg",
       "width": 1920,
       "height": 1080,
       "folderId": null
@@ -44,7 +44,7 @@
       "id": "m_shot3",
       "name": "burst-lines.svg",
       "kind": "svg",
-      "src": "/library/svg/burst-lines.svg",
+      "src": "library/svg/burst-lines.svg",
       "width": 1920,
       "height": 1080,
       "folderId": null
@@ -53,7 +53,7 @@
       "id": "m_shot4",
       "name": "sparkles.svg",
       "kind": "svg",
-      "src": "/library/svg/sparkles.svg",
+      "src": "library/svg/sparkles.svg",
       "width": 1920,
       "height": 1080,
       "folderId": null

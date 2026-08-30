@@ -59,7 +59,7 @@ fs.copyFileSync(path.join(ROOT, "demo", "demo-project.json"),
 for (const dir of LIBRARY_DIRS) {
   const items = walkFiles(path.join(ROOT, "library", dir), "", []).map((f) => ({
     name: f.name, rel: f.rel, size: f.size,
-    src: "/library/" + dir + "/" + f.rel.split("/").map(encodeURIComponent).join("/"),
+    src: "library/" + dir + "/" + f.rel.split("/").map(encodeURIComponent).join("/"),
   }));
   fs.writeFileSync(path.join(DIST, "demo", "library-" + dir + ".json"),
     JSON.stringify(items));
