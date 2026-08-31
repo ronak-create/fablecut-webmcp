@@ -167,6 +167,21 @@ inspector read *"3 clips selected"*, and the three split boundaries were visible
 on V1, V2 and V3. The tool selection, and the recovery in step 3, were the
 agent's own — it was given a sentence, not a plan.
 
+A second run in the same client covered the selection and undo claims
+end to end. A clip was selected **by hand, with the mouse**, and the agent was
+asked *"what do I have selected right now?"* — it called `get_selection` and
+answered "one clip selected: shot 3 - burst on video track V1, from 6.6 to 10.0
+seconds", with no id or filename given to it. Asked to *"make the selected clip
+one second shorter"*, it chained `get_selection` and `trim_clip` and took the
+clip from 3.4s to 2.4s.
+
+Then the human pressed <kbd>Ctrl</kbd>+<kbd>Z</kbd> in the page, and the agent
+was asked what the timeline looked like. It re-read the state and reported the
+timeline back at 8 clips with `burst (6.6-10s)` restored, adding: *"The prior
+split and trim are no longer present."* The human reversed the agent's edits
+with an ordinary keystroke, and the agent could observe that it had happened.
+One timeline, one history, two people editing it.
+
 ### Notes for anyone implementing against Chrome 151
 
 Two details that are easy to get wrong and are not obvious from the spec text:
