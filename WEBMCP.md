@@ -143,6 +143,30 @@ sent to the page — *not* the `undo_edit` tool. Each keystroke reversed one
 agent edit, in order, restoring the timeline to its exact starting state. The
 claim above is tested, not assumed.
 
+### Driven by an agent, not just by the host API
+
+Everything above exercises the transport with hand-picked calls. The tools were
+then handed to an independent agent — the **in-app browser of OpenAI's Codex
+desktop app on Windows** (the ChatGPT desktop app family, which gained WebMCP
+support in late August 2026), running its `5.6 Terra Medium` model. No ids, no
+tool names and no schema hints were supplied by the human; the whole instruction
+was *"move to 4.5 seconds and split what's under the playhead."*
+
+The agent asked for permission before using the page's tools, then:
+
+1. called `set_playhead`, reporting back `00:00:04:15`,
+2. called `get_frame_context` and described what it found in plain language —
+   the grade adjustment layer, the title clip reading "your selection is the
+   prompt", and `shot 2 - pulse`,
+3. hit the fact that `split_at_playhead` is selection-scoped, called
+   `select_clips` on those three clips itself to satisfy it, and
+4. called `split_at_playhead`, taking the timeline from 8 clips to 11.
+
+The editor UI followed along the whole way: the playhead sat at `00:04:15`, the
+inspector read *"3 clips selected"*, and the three split boundaries were visible
+on V1, V2 and V3. The tool selection, and the recovery in step 3, were the
+agent's own — it was given a sentence, not a plan.
+
 ### Notes for anyone implementing against Chrome 151
 
 Two details that are easy to get wrong and are not obvious from the spec text:
