@@ -314,7 +314,7 @@
     const h = host();
     if (!h) {
       console.warn(LOG, "WebMCP unavailable in this browser. Needs Chrome 149+ with " +
-        "chrome://flags/#enable-webmcp-testing, or ChatGPT's in-app browser.");
+        "chrome://flags/#enable-webmcp-testing, or the ChatGPT desktop app's built-in browser.");
       window.FableCutWebMCP = { available: false, tools: TOOLS, names: TOOLS.map((t) => t.name) };
       return;
     }

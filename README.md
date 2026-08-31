@@ -47,8 +47,8 @@ Full tool list and the prior-work / new-work split: **[WEBMCP.md](WEBMCP.md)**.
 **Live demo: <https://ronak-create.github.io/fablecut-webmcp/>**
 
 Open it in **Chrome 149+** with `chrome://flags/#enable-webmcp-testing`
-set to Enabled, or in **ChatGPT's in-app browser**, which supports WebMCP out of
-the box. Then ask your agent things like:
+set to Enabled, or in the built-in browser of the **ChatGPT desktop app**. Then
+ask your agent things like:
 
 - "What is on this timeline?"
 - "Move to 4.5 seconds and split whatever is under the playhead."

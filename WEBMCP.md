@@ -99,7 +99,10 @@ node server.js          # http://localhost:7777
 ```
 
 Open in **Chrome 149+** with `chrome://flags/#enable-webmcp-testing` set to
-Enabled, or in **ChatGPT's in-app browser**, which supports WebMCP out of the box.
+Enabled. WebMCP is also supported by the built-in browser in the **ChatGPT
+desktop app** (added late August 2026). ChatGPT Atlas, which earlier versions of
+this document pointed at, was discontinued by OpenAI on 9 August 2026 and its
+browser-agent work folded back into the ChatGPT desktop app.
 
 Without WebMCP available, the editor works normally and the layer logs a warning
 instead of registering. The tool set is still inspectable for debugging:
@@ -109,6 +112,73 @@ window.FableCutWebMCP            // { available, via, names, tools, unregister }
 await window.FableCutWebMCP.tools
   .find(t => t.name === "get_selection").execute({})
 ```
+
+## Tested with
+
+Verified **2026-08-31**, Chrome **151.0.7922.174** on Windows 11, with
+`chrome://flags/#enable-webmcp-testing` set to Enabled — against both the hosted
+demo and a local `node server.js` instance.
+
+Chrome 151 exposes `document.modelContext` as a `ModelContext` with
+`registerTool` / `getTools` / `executeTool` / `ontoolchange`, and aliases
+`navigator.modelContext` to the same object, so the dual-shape feature detection
+above resolves to the spec form.
+
+**Registration.** `document.modelContext.getTools()` returns all **11** tools,
+each attributed to the page origin, with its `inputSchema` intact.
+
+**Execution.** All 11 tools were invoked through
+`document.modelContext.executeTool()` — the host API itself, not the page's own
+`window.FableCutWebMCP.tools` array. Read tools returned correct state;
+`set_playhead` and `select_clips` visibly moved the human's playhead and
+selection (the timeline highlighted the clip and the inspector loaded it);
+`split_at_playhead`, `move_clip`, `trim_clip` and `delete_clips` all edited the
+timeline as specified. The same pass was repeated against `node server.js`, so
+the layer behaves identically whether `scheduleSave` writes `project.json` over
+HTTP or the static-mode localStorage shim.
+
+**The shared undo stack.** Four edits were made through WebMCP (trim, move,
+delete, split), then four ordinary <kbd>Ctrl</kbd>+<kbd>Z</kbd> keystrokes were
+sent to the page — *not* the `undo_edit` tool. Each keystroke reversed one
+agent edit, in order, restoring the timeline to its exact starting state. The
+claim above is tested, not assumed.
+
+### Notes for anyone implementing against Chrome 151
+
+Two details that are easy to get wrong and are not obvious from the spec text:
+
+- `RegisteredTool.inputSchema` comes back from `getTools()` as a **JSON string**,
+  not an object. `tool.inputSchema.properties` is `undefined`; you must
+  `JSON.parse` it first.
+- `executeTool(tool, args)` takes the `RegisteredTool` object (not its name) and
+  wants `args` as a **JSON string**. Passing a plain object fails with
+  `UnknownError: Failed to parse input arguments`.
+
+### Reproducing it
+
+```sh
+node server.js
+```
+
+Then open <http://127.0.0.1:7777/> — use the IPv4 literal, not `localhost`:
+`server.js` binds IPv4 only, and Chrome resolves `localhost` to `::1` first,
+which fails to connect. Or just use the hosted demo, which needs nothing running.
+
+```js
+const mc = document.modelContext;
+const tools = await mc.getTools();                       // 11
+const run = async (n, a = {}) =>
+  String(await mc.executeTool(tools.find(t => t.name === n), JSON.stringify(a)));
+
+await run("get_timeline");
+await run("select_clips", { ids: ["c_shot1"] });
+await run("trim_clip", { id: "c_shot1", duration: 2 });
+// now press Ctrl+Z in the page — the trim reverses.
+```
+
+Note that `split_at_playhead` is selection-scoped, exactly like pressing `S` in
+the UI: with a selection whose range does not contain the playhead it correctly
+reports that there is nothing to split.
 
 ## Licence
 
