@@ -59,6 +59,10 @@ ask your agent things like:
 Without WebMCP the editor still works normally, and the layer logs a warning
 instead of registering.
 
+**Demo video:** <https://youtu.be/zooqpnJIXbE> — an agent reading the timeline,
+cutting to beat markers, and being undone with <kbd>Ctrl+Z</kbd> off the shared
+undo stack. Cut in FableCut itself.
+
 ## Run it locally
 
 Two ways, both with zero dependencies and no build step.
